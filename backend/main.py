@@ -52,8 +52,9 @@ async def options_handler(full_path: str):
 async def scout_location(request: Request):
     try:
         data = await request.json()
-        city = data.get("query", "Abuja")
-        budget = data.get("budget", "200000")
+        city = data.get("query", "London")
+        budget = data.get("budget", "1500")
+        currency = data.get("currency", "USD")
         
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
@@ -65,12 +66,13 @@ async def scout_location(request: Request):
         client = genai.Client(api_key=api_key)
         
         prompt = (
-            f"You are an expert film location scout. Provide 3 specific shooting location recommendations "
-            f"in or around {city} for a daily budget of {budget}. "
-            f"For image_keyword, give a single English search keyword representing the visual environment (e.g. quarry, gallery, reservoir, palace, market)."
+            f"You are a global film location scout. Provide 3 real, specific shooting location recommendations "
+            f"in or around '{city}' for a production with a daily location permit budget of {currency} {budget}.\n"
+            f"- Output realistic permit costs in the requested currency ({currency}) or local equivalent.\n"
+            f"- Provide actionable logistics notes tailored to filming in '{city}' (permits, access, power, acoustics).\n"
+            f"- For image_keyword, provide a single English architectural/environmental keyword (e.g., quarry, gallery, waterfront, cathedral, alleyway, skyscraper)."
         )
         
-        # Enforce structured JSON schema response from Gemini
         response = client.models.generate_content(
             model="gemini-3.6-flash",
             contents=prompt,
@@ -83,19 +85,21 @@ async def scout_location(request: Request):
         parsed_data = LocationResponse.model_validate_json(response.text)
         locations_list = []
 
-        # High-res cinematic visual mapping
+        # High-resolution Unsplash photography matching global scenery
         for loc in parsed_data.locations:
             kw = loc.image_keyword.lower()
-            img_url = "[https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80)"
+            img_url = "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80"
             
-            if "quarry" in kw or "rock" in kw or "stone" in kw:
-                img_url = "[https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=1000&q=80)"
-            elif "gallery" in kw or "art" in kw or "museum" in kw or "modern" in kw:
-                img_url = "[https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80)"
-            elif "reservoir" in kw or "dam" in kw or "lake" in kw or "water" in kw:
-                img_url = "[https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80)"
-            elif "park" in kw or "nature" in kw or "forest" in kw:
-                img_url = "[https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=80)"
+            if "quarry" in kw or "rock" in kw or "mountain" in kw:
+                img_url = "https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=1000&q=80"
+            elif "gallery" in kw or "art" in kw or "museum" in kw or "modern" in kw or "architecture" in kw:
+                img_url = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80"
+            elif "reservoir" in kw or "dam" in kw or "lake" in kw or "water" in kw or "beach" in kw:
+                img_url = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80"
+            elif "park" in kw or "forest" in kw or "nature" in kw:
+                img_url = "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=80"
+            elif "city" in kw or "street" in kw or "skyscraper" in kw or "alley" in kw:
+                img_url = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80"
                 
             locations_list.append({
                 "name": loc.name,
@@ -110,6 +114,7 @@ async def scout_location(request: Request):
             "status": "success",
             "city": city,
             "budget": budget,
+            "currency": currency,
             "locations": locations_list
         }
 

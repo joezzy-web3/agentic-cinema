@@ -12,12 +12,12 @@ interface LocationItem {
 }
 
 export default function Home() {
-  const [city, setCity] = useState("Abuja");
+  const [city, setCity] = useState("Tokyo");
   const [budget, setBudget] = useState("200000");
-  const [image, setImage] = useState<File null |>(null);
+  const [currency, setCurrency] = useState("JPY");
+  const [image, setImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState<LocationItem[]>([]);
-  const [rawText, setRawText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,10 +30,9 @@ export default function Home() {
     setLoading(true);
     setError(null);
     setLocations([]);
-    setRawText(null);
 
     try {
-      const response = await fetch("[https://agentic-cinema.onrender.com/scout](https://agentic-cinema.onrender.com/scout)", {
+      const response = await fetch("https://agentic-cinema.onrender.com/scout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,6 +40,7 @@ export default function Home() {
         body: JSON.stringify({
           query: city,
           budget: budget,
+          currency: currency,
           image_name: image ? image.name : null,
         }),
       });
@@ -53,10 +53,8 @@ export default function Home() {
       
       if (data.locations && Array.isArray(data.locations)) {
         setLocations(data.locations);
-      } else if (data.recommendations) {
-        setRawText(data.recommendations);
       } else {
-        throw new Error("No location data received.");
+        throw new Error("No valid location data received.");
       }
     } catch (err: any) {
       setError(err.message || "Failed to fetch location scout analysis.");
@@ -71,13 +69,13 @@ export default function Home() {
         <div>
           <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase">Live AI Production Engine</span>
+            <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase">Global AI Scout Engine</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white">
             AGENTIC CINEMA
           </h1>
           <p className="text-slate-400 text-xs mt-1">
-            Intelligent Location Scouting & Production Logistics
+            Worldwide Film Location Scouting & Logistics Intelligence
           </p>
         </div>
       </header>
@@ -88,25 +86,44 @@ export default function Home() {
           <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">Scout Parameters</h2>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1.5 font-medium">City / Region</label>
+            <label className="block text-xs text-slate-400 mb-1.5 font-medium">City, Region or Country</label>
             <input
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500"
-              placeholder="e.g. Abuja"
+              placeholder="e.g. London, Paris, Tokyo, Lagos"
             />
           </div>
 
-          <div>
-            <label className="block text-xs text-slate-400 mb-1.5 font-medium">Daily Permit Budget (₦)</label>
-            <input
-              type="text"
-              value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500"
-              placeholder="e.g. 200000"
-            />
+          <div className="grid grid-cols-3 gap-2">
+            <div className="col-span-1">
+              <label className="block text-xs text-slate-400 mb-1.5 font-medium">Currency</label>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-3 text-sm text-white focus:outline-none focus:border-indigo-500"
+              >
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="NGN">NGN (₦)</option>
+                <option value="CAD">CAD ($)</option>
+                <option value="AUD">AUD ($)</option>
+                <option value="JPY">JPY (¥)</option>
+                <option value="AED">AED (AED)</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs text-slate-400 mb-1.5 font-medium">Daily Permit Budget</label>
+              <input
+                type="text"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500"
+                placeholder="e.g. 2000"
+              />
+            </div>
           </div>
 
           <div>
@@ -125,7 +142,7 @@ export default function Home() {
             disabled={loading}
             className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white font-semibold py-3.5 rounded-xl transition duration-200 text-sm shadow-lg shadow-indigo-600/20"
           >
-            {loading ? "Scouting Locations..." : "Start AI Location Scout"}
+            {loading ? "Scouting Worldwide..." : "Start AI Location Scout"}
           </button>
 
           {error && <div className="p-3 bg-red-950/60 border border-red-800 rounded-xl text-xs text-red-300">{error}</div>}
@@ -133,10 +150,10 @@ export default function Home() {
 
         {/* Results */}
         <div className="lg:col-span-8 space-y-6">
-          {locations.length === 0 && !rawText && !loading && (
+          {locations.length === 0 && !loading && (
             <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-12 text-center text-slate-500 min-h-[300px] flex flex-col items-center justify-center">
-              <p className="text-sm">Ready to scout location briefs.</p>
-              <p className="text-xs text-slate-600 mt-1">Enter your target parameters on the left to begin.</p>
+              <p className="text-sm">Ready to scout global production locations.</p>
+              <p className="text-xs text-slate-600 mt-1">Try entering "Paris", "New York", or "Cape Town" with your target currency.</p>
             </div>
           )}
 
@@ -165,19 +182,12 @@ export default function Home() {
                 </div>
 
                 <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl">
-                  <h4 className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">Logistics Note</h4>
+                  <h4 className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">Logistics & Permits Brief</h4>
                   <p className="text-xs text-slate-400 leading-relaxed">{loc.logistics}</p>
                 </div>
               </div>
             </div>
           ))}
-
-          {rawText && (
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
-              <h3 className="text-indigo-400 font-semibold text-sm">Location Brief</h3>
-              <div className="text-xs text-slate-300 whitespace-pre-line leading-relaxed font-sans">{rawText}</div>
-            </div>
-          )}
         </div>
       </main>
     </div>

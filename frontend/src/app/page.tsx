@@ -92,7 +92,7 @@ export default function Home() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to fetch location scout analysis.");
-    } fontally {
+    } finally {
       setLoading(false);
     }
   };
@@ -151,7 +151,7 @@ export default function Home() {
         }
       `}</style>
 
-      <div className="mx-auto max-w-6xl px-6 py-12 sm:px-10">
+      <div className="mx-auto max-w-7xl px-6 py-12 sm:px-10">
         <header className="mb-14 border-b pb-8" style={{ borderColor: "var(--border)" }}>
           <p
             className="mb-3 font-[family-name:var(--font-mono)] text-[11px] tracking-wide"
@@ -172,7 +172,7 @@ export default function Home() {
         </header>
 
         <main className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-3">
             <div
               className="sticky top-8 space-y-6 rounded-sm border p-6"
               style={{ backgroundColor: "var(--panel)", borderColor: "var(--border)" }}
@@ -275,7 +275,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-9">
             {locations.length === 0 && !loading && (
               <div
                 className="flex min-h-[320px] flex-col items-center justify-center border border-dashed p-12 text-center"
@@ -290,7 +290,7 @@ export default function Home() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {locations.map((loc, idx) => (
                 <div key={idx} className="reveal" style={{ animationDelay: `${idx * 60}ms` }}>
                   <div className="overflow-hidden" style={{ backgroundColor: "var(--panel)" }}>
@@ -301,20 +301,20 @@ export default function Home() {
                     <Sprocket />
 
                     <div className="space-y-3 p-4">
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h3 className="font-[family-name:var(--font-display)] text-2xl font-bold leading-tight">
+                          <h3 className="font-[family-name:var(--font-display)] text-xl font-bold leading-tight">
                             {loc.name}
                           </h3>
                           <span
-                            className="mt-1 inline-block border px-1.5 py-0.5 text-[11px]"
+                            className="mt-1 inline-block border px-1.5 py-0.5 text-[10px]"
                             style={{ borderColor: "var(--brass)", color: "var(--brass)" }}
                           >
                             {loc.category}
                           </span>
                         </div>
                         <span
-                          className="whitespace-nowrap font-[family-name:var(--font-mono)] text-xs"
+                          className="whitespace-nowrap font-[family-name:var(--font-mono)] text-[11px]"
                           style={{ color: "var(--text-muted)" }}
                         >
                           {loc.estimated_cost}
@@ -322,14 +322,14 @@ export default function Home() {
                       </div>
 
                       <div>
-                        <p className="mb-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                        <p className="mb-0.5 text-[10px]" style={{ color: "var(--text-muted)" }}>
                           Look
                         </p>
                         <p className="text-xs leading-relaxed">{loc.aesthetic}</p>
                       </div>
 
-                      <div className="border-t pt-3" style={{ borderColor: "var(--border)" }}>
-                        <p className="mb-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                      <div className="border-t pt-2.5" style={{ borderColor: "var(--border)" }}>
+                        <p className="mb-0.5 text-[10px]" style={{ color: "var(--text-muted)" }}>
                           Permits &amp; logistics
                         </p>
                         <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>

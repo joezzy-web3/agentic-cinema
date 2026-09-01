@@ -154,7 +154,7 @@ def health_check():
 
 def build_prompt(req: ScoutRequest) -> str:
     return (
-        f"You are a global film location scout. Provide 3 real, specific shooting location "
+        f"You are a global film location scout. Provide 6 real, specific shooting location "
         f"recommendations in or around '{req.query}' for a production with a daily location "
         f"permit budget of {req.currency} {req.budget}.\n"
         f"- Output realistic permit costs in the requested currency ({req.currency}) or local equivalent.\n"

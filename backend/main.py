@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 app = FastAPI(title="Agentic Cinema API")
 
-# Enable CORS for Vercel
+# Enable CORS for Vercel deployment and local testing
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

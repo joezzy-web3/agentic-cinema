@@ -1,9 +1,11 @@
 import os
-import json
+from typing import List
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from google import genai
+from google.genai import types
+from pydantic import BaseModel
 
 app = FastAPI(title="Agentic Cinema API")
 
@@ -14,6 +16,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class LocationItem(BaseModel):
+    name: str
+    category: str
+    aesthetic: str
+    estimated_cost: str
+    logistics: str
+    image_keyword: str
+
+class LocationResponse(BaseModel):
+    locations: List[LocationItem]
 
 @app.get("/")
 def read_root():
@@ -46,54 +59,58 @@ async def scout_location(request: Request):
         if not api_key:
             return JSONResponse(
                 status_code=500,
-                content={"status": "error", "message": "GEMINI_API_KEY environment variable is missing."}
+                content={"status": "error", "message": "GEMINI_API_KEY is not configured on Render."}
             )
             
         client = genai.Client(api_key=api_key)
         
         prompt = (
             f"You are an expert film location scout. Provide 3 specific shooting location recommendations "
-            f"in or around {city} for a daily budget of {budget}.\n\n"
-            f"You MUST return strictly a valid JSON array of objects with NO extra markdown formatting or backticks. "
-            f"Each object must contain these exact keys:\n"
-            f"- name: Location Name\n"
-            f"- category: Visual style tag (e.g., 'Dramatic Nature', 'Modern Architecture', 'Waterfront')\n"
-            f"- aesthetic: Description of vibe/aesthetic\n"
-            f"- estimated_cost: Cost range string (e.g. '₦100,000 – ₦150,000 / day')\n"
-            f"- logistics: Critical logistics notes\n"
-            f"- image_keyword: A single search keyword suitable for an architectural/cinematic photo (e.g., 'quarry', 'art-gallery', 'reservoir')"
+            f"in or around {city} for a daily budget of {budget}. "
+            f"For image_keyword, give a single English search keyword representing the visual environment (e.g. quarry, gallery, reservoir, palace, market)."
         )
         
+        # Enforce structured JSON schema response from Gemini
         response = client.models.generate_content(
             model="gemini-3.6-flash",
             contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=LocationResponse,
+            ),
         )
         
-        raw_text = response.text.strip()
-        if raw_text.startswith("```"):
-            raw_text = raw_text.split("```")[1]
-            if raw_text.startswith("json"):
-                raw_text = raw_text[4:]
-        raw_text = raw_text.strip()
-        
-        locations = json.loads(raw_text)
-        
-        # Attach high-quality photography URLs based on keyword
-        for loc in locations:
-            kw = loc.get("image_keyword", "architecture")
-            loc["image_url"] = f"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80"
-            if "quarry" in kw.lower() or "rock" in kw.lower():
-                loc["image_url"] = "https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=800&q=80"
-            elif "gallery" in kw.lower() or "art" in kw.lower() or "modern" in kw.lower():
-                loc["image_url"] = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80"
-            elif "dam" in kw.lower() or "water" in kw.lower() or "lake" in kw.lower():
-                loc["image_url"] = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
+        parsed_data = LocationResponse.model_validate_json(response.text)
+        locations_list = []
+
+        # High-res cinematic visual mapping
+        for loc in parsed_data.locations:
+            kw = loc.image_keyword.lower()
+            img_url = "[https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80)"
+            
+            if "quarry" in kw or "rock" in kw or "stone" in kw:
+                img_url = "[https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=1000&q=80)"
+            elif "gallery" in kw or "art" in kw or "museum" in kw or "modern" in kw:
+                img_url = "[https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80)"
+            elif "reservoir" in kw or "dam" in kw or "lake" in kw or "water" in kw:
+                img_url = "[https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80)"
+            elif "park" in kw or "nature" in kw or "forest" in kw:
+                img_url = "[https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=80](https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=80)"
+                
+            locations_list.append({
+                "name": loc.name,
+                "category": loc.category,
+                "aesthetic": loc.aesthetic,
+                "estimated_cost": loc.estimated_cost,
+                "logistics": loc.logistics,
+                "image_url": img_url
+            })
         
         return {
             "status": "success",
             "city": city,
             "budget": budget,
-            "locations": locations
+            "locations": locations_list
         }
 
     except Exception as e:

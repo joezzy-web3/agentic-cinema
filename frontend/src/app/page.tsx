@@ -1,6 +1,23 @@
 "use client";
 
 import React, { useState } from "react";
+import { Big_Shoulders_Display, Inter, IBM_Plex_Mono } from "next/font/google";
+
+const display = Big_Shoulders_Display({
+  subsets: ["latin"],
+  weight: ["700", "900"],
+  variable: "--font-display",
+});
+const body = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+});
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
+});
 
 interface LocationItem {
   name: string;
@@ -9,6 +26,23 @@ interface LocationItem {
   estimated_cost: string;
   logistics: string;
   image_url: string;
+}
+
+const CURRENCIES = ["USD", "EUR", "GBP", "NGN", "CAD", "AUD", "JPY", "AED"];
+
+function Sprocket() {
+  return (
+    <div
+      className="h-3.5 w-full"
+      style={{
+        backgroundColor: "var(--panel)",
+        backgroundImage:
+          "radial-gradient(circle at 10px 7px, var(--bg) 3.4px, transparent 3.5px)",
+        backgroundSize: "20px 14px",
+        backgroundRepeat: "repeat-x",
+      }}
+    />
+  );
 }
 
 export default function Home() {
@@ -50,7 +84,7 @@ export default function Home() {
       }
 
       const data = await response.json();
-      
+
       if (data.locations && Array.isArray(data.locations)) {
         setLocations(data.locations);
       } else {
@@ -58,138 +92,258 @@ export default function Home() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to fetch location scout analysis.");
-    } finally {
+    } fontally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-8 font-sans">
-      <header className="max-w-5xl mx-auto mb-8 text-center sm:text-left border-b border-slate-800 pb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
-          <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase">Global AI Scout Engine</span>
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">
-            AGENTIC CINEMA
-          </h1>
-          <p className="text-slate-400 text-xs mt-1">
-            Worldwide Film Location Scouting & Logistics Intelligence
-          </p>
-        </div>
-      </header>
+    <div
+      className={`${display.variable} ${body.variable} ${mono.variable} min-h-screen font-[family-name:var(--font-body)]`}
+      style={
+        {
+          "--bg": "#16151a",
+          "--panel": "#1d1b20",
+          "--panel-2": "#232025",
+          "--border": "#322d2c",
+          "--text": "#ede9e2",
+          "--text-muted": "#948e85",
+          "--brass": "#c89b4a",
+          "--brass-hover": "#b78c3f",
+          "--brick": "#b24a3e",
+          backgroundColor: "var(--bg)",
+          color: "var(--text)",
+        } as React.CSSProperties
+      }
+    >
+      <style jsx global>{`
+        @keyframes reveal {
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .reveal {
+          animation: reveal 0.5s ease-out both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .reveal {
+            animation: none;
+          }
+        }
+        .field-underline {
+          background: transparent;
+          border: none;
+          border-bottom: 1px solid var(--border);
+          border-radius: 0;
+        }
+        .field-underline:focus {
+          outline: none;
+          border-bottom-color: var(--brass);
+        }
+        *:focus-visible {
+          outline: 2px solid var(--brass);
+          outline-offset: 2px;
+        }
+      `}</style>
 
-      <main className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Controls */}
-        <div className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit space-y-5 shadow-xl">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">Scout Parameters</h2>
-
-          <div>
-            <label className="block text-xs text-slate-400 mb-1.5 font-medium">City, Region or Country</label>
-            <input
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500"
-              placeholder="e.g. London, Paris, Tokyo, Lagos"
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1">
-              <label className="block text-xs text-slate-400 mb-1.5 font-medium">Currency</label>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-3 text-sm text-white focus:outline-none focus:border-indigo-500"
-              >
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
-                <option value="NGN">NGN (₦)</option>
-                <option value="CAD">CAD ($)</option>
-                <option value="AUD">AUD ($)</option>
-                <option value="JPY">JPY (¥)</option>
-                <option value="AED">AED (AED)</option>
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className="block text-xs text-slate-400 mb-1.5 font-medium">Daily Permit Budget</label>
-              <input
-                type="text"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500"
-                placeholder="e.g. 2000"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs text-slate-400 mb-1.5 font-medium">Reference Mood Photo (Optional)</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white cursor-pointer"
-            />
-            {image && <p className="text-[11px] text-indigo-400 mt-1">Attached: {image.name}</p>}
-          </div>
-
-          <button
-            onClick={handleScout}
-            disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white font-semibold py-3.5 rounded-xl transition duration-200 text-sm shadow-lg shadow-indigo-600/20"
+      <div className="mx-auto max-w-6xl px-6 py-12 sm:px-10">
+        <header className="mb-14 border-b pb-8" style={{ borderColor: "var(--border)" }}>
+          <p
+            className="mb-3 font-[family-name:var(--font-mono)] text-[11px] tracking-wide"
+            style={{ color: "var(--brass)" }}
           >
-            {loading ? "Scouting Worldwide..." : "Start AI Location Scout"}
-          </button>
+            EXT. WORLDWIDE — CONTINUOUS
+          </p>
+          <h1
+            className="font-[family-name:var(--font-display)] text-6xl font-black leading-[0.9] sm:text-7xl"
+            style={{ color: "var(--text)" }}
+          >
+            Agentic Cinema
+          </h1>
+          <p className="mt-3 max-w-md text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            An AI location scout. Give it a place and a budget, it comes back
+            with a shot list and a permit brief.
+          </p>
+        </header>
 
-          {error && <div className="p-3 bg-red-950/60 border border-red-800 rounded-xl text-xs text-red-300">{error}</div>}
-        </div>
+        <main className="grid grid-cols-1 gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <div
+              className="sticky top-8 space-y-6 rounded-sm border p-6"
+              style={{ backgroundColor: "var(--panel)", borderColor: "var(--border)" }}
+            >
+              <h2 className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                Scout request
+              </h2>
 
-        {/* Results */}
-        <div className="lg:col-span-8 space-y-6">
-          {locations.length === 0 && !loading && (
-            <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-12 text-center text-slate-500 min-h-[300px] flex flex-col items-center justify-center">
-              <p className="text-sm">Ready to scout global production locations.</p>
-              <p className="text-xs text-slate-600 mt-1">Try entering "Paris", "New York", or "Cape Town" with your target currency.</p>
-            </div>
-          )}
-
-          {locations.map((loc, idx) => (
-            <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl transition hover:border-slate-700">
-              <div className="relative h-56 w-full bg-slate-950">
-                <img src={loc.image_url} alt={loc.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-                <div className="absolute top-4 left-4">
-                  <span className="bg-slate-950/80 backdrop-blur-md border border-slate-700 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full">
-                    {loc.category}
-                  </span>
-                </div>
-                <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-                  <h3 className="text-xl font-bold text-white drop-shadow-md">{loc.name}</h3>
-                  <span className="bg-emerald-950/90 text-emerald-300 border border-emerald-800 px-3 py-1 rounded-lg text-xs font-mono font-bold">
-                    {loc.estimated_cost}
-                  </span>
-                </div>
+              <div>
+                <label htmlFor="city" className="mb-1.5 block text-xs" style={{ color: "var(--text-muted)" }}>
+                  City, region or country
+                </label>
+                <input
+                  id="city"
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="field-underline w-full py-2 text-sm"
+                  style={{ color: "var(--text)" }}
+                  placeholder="London, Lagos, Tokyo…"
+                />
               </div>
 
-              <div className="p-5 space-y-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <h4 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Visual Aesthetic</h4>
-                  <p className="text-xs text-slate-200 leading-relaxed">{loc.aesthetic}</p>
+                  <label htmlFor="currency" className="mb-1.5 block text-xs" style={{ color: "var(--text-muted)" }}>
+                    Currency
+                  </label>
+                  <select
+                    id="currency"
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    className="field-underline w-full py-2 text-sm"
+                    style={{ color: "var(--text)" }}
+                  >
+                    {CURRENCIES.map((c) => (
+                      <option key={c} value={c} style={{ backgroundColor: "var(--panel)" }}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
-                <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl">
-                  <h4 className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">Logistics & Permits Brief</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">{loc.logistics}</p>
+                <div className="col-span-2">
+                  <label htmlFor="budget" className="mb-1.5 block text-xs" style={{ color: "var(--text-muted)" }}>
+                    Daily permit budget
+                  </label>
+                  <input
+                    id="budget"
+                    type="text"
+                    inputMode="numeric"
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
+                    className="field-underline w-full py-2 text-right font-[family-name:var(--font-mono)] text-sm"
+                    style={{ color: "var(--text)" }}
+                    placeholder="2000"
+                  />
                 </div>
               </div>
+
+              <div>
+                <label
+                  htmlFor="mood-photo"
+                  className="inline-block cursor-pointer border-b border-dashed pb-0.5 text-xs"
+                  style={{ borderColor: "var(--text-muted)", color: "var(--text-muted)" }}
+                >
+                  {image ? `Attached: ${image.name}` : "Attach a reference mood photo (optional)"}
+                </label>
+                <input
+                  id="mood-photo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </div>
+
+              <button
+                onClick={handleScout}
+                disabled={loading}
+                className="w-full rounded-sm py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ backgroundColor: "var(--brass)", color: "var(--bg)" }}
+                onMouseEnter={(e) => {
+                  if (!loading) e.currentTarget.style.backgroundColor = "var(--brass-hover)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "var(--brass)";
+                }}
+              >
+                {loading ? "Scouting…" : "Scout locations"}
+              </button>
+
+              {error && (
+                <div
+                  className="rounded-sm border px-3 py-2.5 text-xs leading-relaxed"
+                  style={{ borderColor: "var(--brick)", color: "#e3a89f" }}
+                >
+                  Scout failed: {error}
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      </main>
+          </div>
+
+          <div className="lg:col-span-8">
+            {locations.length === 0 && !loading && (
+              <div
+                className="flex min-h-[320px] flex-col items-center justify-center border border-dashed p-12 text-center"
+                style={{ borderColor: "var(--border)" }}
+              >
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                  No locations scouted yet.
+                </p>
+                <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+                  Enter a city and run a scout — results appear here as a contact sheet.
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+              {locations.map((loc, idx) => (
+                <div key={idx} className="reveal" style={{ animationDelay: `${idx * 60}ms` }}>
+                  <div className="overflow-hidden" style={{ backgroundColor: "var(--panel)" }}>
+                    <Sprocket />
+                    <div className="relative aspect-[4/3] w-full" style={{ backgroundColor: "var(--bg)" }}>
+                      <img src={loc.image_url} alt={loc.name} className="h-full w-full object-cover" />
+                    </div>
+                    <Sprocket />
+
+                    <div className="space-y-3 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="font-[family-name:var(--font-display)] text-2xl font-bold leading-tight">
+                            {loc.name}
+                          </h3>
+                          <span
+                            className="mt-1 inline-block border px-1.5 py-0.5 text-[11px]"
+                            style={{ borderColor: "var(--brass)", color: "var(--brass)" }}
+                          >
+                            {loc.category}
+                          </span>
+                        </div>
+                        <span
+                          className="whitespace-nowrap font-[family-name:var(--font-mono)] text-xs"
+                          style={{ color: "var(--text-muted)" }}
+                        >
+                          {loc.estimated_cost}
+                        </span>
+                      </div>
+
+                      <div>
+                        <p className="mb-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                          Look
+                        </p>
+                        <p className="text-xs leading-relaxed">{loc.aesthetic}</p>
+                      </div>
+
+                      <div className="border-t pt-3" style={{ borderColor: "var(--border)" }}>
+                        <p className="mb-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                          Permits &amp; logistics
+                        </p>
+                        <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                          {loc.logistics}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

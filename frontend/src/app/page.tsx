@@ -52,7 +52,7 @@ export default function Home() {
     formData.append("budget", budget);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/scout", {
+      const response = await fetch("https://agentic-cinema.onrender.com/scout", {
         method: "POST",
         body: formData,
       });

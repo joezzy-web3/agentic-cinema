@@ -1,4 +1,5 @@
 import os
+import json
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -6,7 +7,6 @@ from google import genai
 
 app = FastAPI(title="Agentic Cinema API")
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -42,22 +42,26 @@ async def scout_location(request: Request):
         city = data.get("query", "Abuja")
         budget = data.get("budget", "200000")
         
-        # Initialize Google GenAI client
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            return {
-                "status": "warning",
-                "message": "GEMINI_API_KEY environment variable is not set on Render.",
-                "city": city,
-                "budget": budget
-            }
+            return JSONResponse(
+                status_code=500,
+                content={"status": "error", "message": "GEMINI_API_KEY environment variable is missing."}
+            )
             
         client = genai.Client(api_key=api_key)
         
         prompt = (
             f"You are an expert film location scout. Provide 3 specific shooting location recommendations "
-            f"in or around {city} for a movie production. The daily location budget is {budget}. "
-            f"For each location, include: 1. Location Name, 2. Visual Aesthetic/Vibe, 3. Estimated Permitting/Rental Cost, 4. Logistics Note."
+            f"in or around {city} for a daily budget of {budget}.\n\n"
+            f"You MUST return strictly a valid JSON array of objects with NO extra markdown formatting or backticks. "
+            f"Each object must contain these exact keys:\n"
+            f"- name: Location Name\n"
+            f"- category: Visual style tag (e.g., 'Dramatic Nature', 'Modern Architecture', 'Waterfront')\n"
+            f"- aesthetic: Description of vibe/aesthetic\n"
+            f"- estimated_cost: Cost range string (e.g. '₦100,000 – ₦150,000 / day')\n"
+            f"- logistics: Critical logistics notes\n"
+            f"- image_keyword: A single search keyword suitable for an architectural/cinematic photo (e.g., 'quarry', 'art-gallery', 'reservoir')"
         )
         
         response = client.models.generate_content(
@@ -65,11 +69,31 @@ async def scout_location(request: Request):
             contents=prompt,
         )
         
+        raw_text = response.text.strip()
+        if raw_text.startswith("```"):
+            raw_text = raw_text.split("```")[1]
+            if raw_text.startswith("json"):
+                raw_text = raw_text[4:]
+        raw_text = raw_text.strip()
+        
+        locations = json.loads(raw_text)
+        
+        # Attach high-quality photography URLs based on keyword
+        for loc in locations:
+            kw = loc.get("image_keyword", "architecture")
+            loc["image_url"] = f"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80"
+            if "quarry" in kw.lower() or "rock" in kw.lower():
+                loc["image_url"] = "https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=800&q=80"
+            elif "gallery" in kw.lower() or "art" in kw.lower() or "modern" in kw.lower():
+                loc["image_url"] = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80"
+            elif "dam" in kw.lower() or "water" in kw.lower() or "lake" in kw.lower():
+                loc["image_url"] = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
+        
         return {
             "status": "success",
             "city": city,
             "budget": budget,
-            "recommendations": response.text
+            "locations": locations
         }
 
     except Exception as e:

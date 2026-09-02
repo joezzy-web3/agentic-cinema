@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     gemini_api_key: str
     gemini_model: str = "gemini-3.6-flash"
     allowed_origins: str = "*"
-    request_timeout_seconds: float = 30.0
+    request_timeout_seconds: float = 55.0  # Increased timeout buffer
 
     @property
     def cors_origins(self) -> List[str]:
@@ -97,14 +97,6 @@ class ScoutResponse(BaseModel):
 
 
 # --------------------------------------------------------------------------
-# Dynamic Image Resolution via Unsplash Source API
-# --------------------------------------------------------------------------
-def resolve_image(search_query: str) -> str:
-    encoded_query = urllib.parse.quote(search_query)
-    return f"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80" if not search_query else f"https://source.unsplash.com/1000x750/?{encoded_query}"
-
-
-# --------------------------------------------------------------------------
 # Gemini Client
 # --------------------------------------------------------------------------
 @asynccontextmanager
@@ -137,15 +129,15 @@ def health_check():
 
 def build_prompt(req: ScoutRequest) -> str:
     return (
-        f"You are an expert film location scout. Provide 6 real, geographically accurate shooting locations "
-        f"located in or within a 30-minute drive of '{req.query}'. The production's daily permit budget is {req.currency} {req.budget}.\n\n"
-        f"Requirements for each location:\n"
-        f"1. name: Exact real-world landmark or location name (no fictional places).\n"
-        f"2. category: Production type (e.g., Architectural Landmark, Public Square, Industrial Site, Natural Reserve).\n"
-        f"3. aesthetic: Specific visual description, architectural style, lighting, and cinematic mood.\n"
-        f"4. estimated_cost: Realistic permit cost estimation per day in {req.currency} or local equivalent.\n"
-        f"5. logistics: Accurate notes on filming access, power supply, sound environment, and council/permit authorities.\n"
-        f"6. image_search_query: 2-3 English search terms for Unsplash to fetch a matching photo (e.g. 'shibuya crossing tokyo', 'tower bridge london')."
+        f"Act as a film location scout. Provide 6 real, accurate filming locations in or near '{req.query}' "
+        f"for a budget of {req.currency} {req.budget}/day.\n"
+        f"Be concise and factual:\n"
+        f"1. name: Real landmark name.\n"
+        f"2. category: E.g., Industrial, Park, Street, Architecture.\n"
+        f"3. aesthetic: Visual look and mood (1-2 sentences).\n"
+        f"4. estimated_cost: Daily cost in {req.currency}.\n"
+        f"5. logistics: Access, sound, power, permits (1-2 sentences).\n"
+        f"6. image_search_query: 2-3 word English search term for Unsplash (e.g., 'tokyo street night')."
     )
 
 
@@ -156,7 +148,7 @@ def call_gemini_sync(client: genai.Client, prompt: str) -> GeneratedLocationResp
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=GeneratedLocationResponse,
-            temperature=0.2,  # Low temperature for higher accuracy and fewer hallucinations
+            temperature=0.2,
         ),
     )
     return GeneratedLocationResponse.model_validate_json(response.text)

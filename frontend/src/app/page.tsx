@@ -2,21 +2,113 @@
 
 import React, { useState } from "react";
 
+interface ScoutResult {
+  id: string;
+  name: string;
+  location: string;
+  matchScore: number;
+  dailyRate: string;
+  tags: string[];
+}
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"scout" | "pipeline">("scout");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isScouting, setIsScouting] = useState<boolean>(false);
   const [scoutComplete, setScoutComplete] = useState<boolean>(false);
+  const [results, setResults] = useState<ScoutResult[]>([]);
+  const [locationQuery, setLocationQuery] = useState<string>("Tokyo");
+  const [budgetQuery, setBudgetQuery] = useState<string>("200000");
+  const [currency, setCurrency] = useState<string>("JPY");
+
+  // Dynamic result generator based on filename/context
+  const generateDynamicResults = (fileName: string, location: string, currencySymbol: string) => {
+    const nameLower = fileName.toLowerCase();
+
+    if (nameLower.includes("water") || nameLower.includes("pool") || nameLower.includes("beach")) {
+      return [
+        {
+          id: "loc-1",
+          name: `${location} Aquatic Studio & Resort`,
+          location: `Coastal Zone, ${location}`,
+          matchScore: 97,
+          dailyRate: `${currencySymbol} 180,000 / day`,
+          tags: ["Water Facilities", "High Capacity", "Underwater Camera Rigs", "Permit Approved"],
+        },
+        {
+          id: "loc-2",
+          name: `${location} Oceanfront Complex`,
+          location: `Bay District, ${location}`,
+          matchScore: 91,
+          dailyRate: `${currencySymbol} 195,000 / day`,
+          tags: ["Natural Lighting", "Cinematic Horizon", "Crew Staging Area"],
+        },
+      ];
+    }
+
+    if (nameLower.includes("cyber") || nameLower.includes("night") || nameLower.includes("neon") || nameLower.includes("city")) {
+      return [
+        {
+          id: "loc-1",
+          name: `${location} Neon Alleyway & Rooftop Stage`,
+          location: `Downtown Central, ${location}`,
+          matchScore: 99,
+          dailyRate: `${currencySymbol} 160,000 / day`,
+          tags: ["Cyberpunk Aesthetics", "Practical Neon Lighting", "Night Permit"],
+        },
+        {
+          id: "loc-2",
+          name: `${location} Industrial Skybridge`,
+          location: `East District, ${location}`,
+          matchScore: 94,
+          dailyRate: `${currencySymbol} 210,000 / day`,
+          tags: ["High Elevation", "Vast Skyline", "Sound Stage Access"],
+        },
+      ];
+    }
+
+    // Universal / General Location Fallback
+    return [
+      {
+        id: "loc-1",
+        name: `${location} Prime Architectural Soundstage`,
+        location: `Central Film District, ${location}`,
+        matchScore: 96,
+        dailyRate: `${currencySymbol} 175,000 / day`,
+        tags: ["Controlled Environment", "Modular Sets", "Full Grip & Electric"],
+      },
+      {
+        id: "loc-2",
+        name: `${location} Exterior Location Lot B`,
+        location: `Metropolitan Outskirts, ${location}`,
+        matchScore: 90,
+        dailyRate: `${currencySymbol} 140,000 / day`,
+        tags: ["DIT Support", "Permit Fast-Track", "Large Vehicle Access"],
+      },
+      {
+        id: "loc-3",
+        name: `${location} Heritage & Culture Grounds`,
+        location: `Old Town District, ${location}`,
+        matchScore: 85,
+        dailyRate: `${currencySymbol} 190,000 / day`,
+        tags: ["Historic Visuals", "Scenic Backdrops", "Private Security"],
+      },
+    ];
+  };
 
   const startScouting = (file: File | null) => {
     setIsScouting(true);
     setScoutComplete(false);
+    setResults([]);
 
-    // Simulate complete scouting sequence
+    const fileName = file ? file.name : "reference-concept.jpg";
+    const currSymbol = currency === "JPY" ? "¥" : currency === "USD" ? "$" : "€";
+
     setTimeout(() => {
       setIsScouting(false);
       setScoutComplete(true);
-    }, 3000);
+      setResults(generateDynamicResults(fileName, locationQuery, currSymbol));
+    }, 2500);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,109 +157,167 @@ export default function Home() {
 
         {/* Tab Content */}
         {activeTab === "scout" && (
-          <div className="bg-[#14141b] rounded-xl border border-gray-800 p-6 space-y-6 shadow-xl">
-            <div className="flex items-center gap-2 text-amber-500 font-semibold text-lg">
-              <span>✦</span>
-              <h2>Scout Parameters</h2>
-            </div>
-
-            <div className="space-y-4">
-              {/* Location Input */}
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">
-                  City, region or country
-                </label>
-                <input
-                  type="text"
-                  defaultValue="Tokyo"
-                  className="w-full bg-transparent border-b border-gray-700 py-2 focus:border-amber-500 outline-none text-white font-medium"
-                />
+          <div className="space-y-6">
+            <div className="bg-[#14141b] rounded-xl border border-gray-800 p-6 space-y-6 shadow-xl">
+              <div className="flex items-center gap-2 text-amber-500 font-semibold text-lg">
+                <span>✦</span>
+                <h2>Scout Parameters</h2>
               </div>
 
-              {/* Currency & Budget */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                {/* Location Input */}
                 <div>
                   <label className="block text-xs font-medium text-gray-400 mb-1">
-                    Currency
-                  </label>
-                  <select className="w-full bg-transparent border-b border-gray-700 py-2 focus:border-amber-500 outline-none text-white font-medium">
-                    <option value="JPY" className="bg-[#14141b]">JPY</option>
-                    <option value="USD" className="bg-[#14141b]">USD</option>
-                    <option value="EUR" className="bg-[#14141b]">EUR</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
-                    Daily permit budget
+                    City, region or country
                   </label>
                   <input
-                    type="number"
-                    defaultValue="200000"
-                    className="w-full bg-transparent border-b border-gray-700 py-2 focus:border-amber-500 outline-none text-right text-white font-medium"
+                    type="text"
+                    value={locationQuery}
+                    onChange={(e) => setLocationQuery(e.target.value)}
+                    className="w-full bg-transparent border-b border-gray-700 py-2 focus:border-amber-500 outline-none text-white font-medium"
                   />
                 </div>
-              </div>
 
-              {/* Upload Input Field */}
-              <div className="pt-2">
-                <label className="block text-xs font-medium text-gray-400 mb-2">
-                  Reference Image / Location Asset
-                </label>
-                <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer bg-[#1a1a23] hover:border-amber-500 transition">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <svg
-                      className={`w-8 h-8 mb-2 ${isScouting ? "animate-spin text-amber-400" : "text-amber-500"}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                {/* Currency & Budget */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">
+                      Currency
+                    </label>
+                    <select
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                      className="w-full bg-transparent border-b border-gray-700 py-2 focus:border-amber-500 outline-none text-white font-medium"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                      />
-                    </svg>
-                    <p className="text-xs text-gray-300">
-                      {isScouting ? (
-                        <span className="text-amber-400 font-medium animate-pulse">
-                          Auto-scouting {selectedFile?.name}...
-                        </span>
-                      ) : selectedFile ? (
-                        <span className="text-amber-400 font-medium">{selectedFile.name}</span>
-                      ) : (
-                        <span><strong className="text-amber-500">Click to upload</strong> reference image</span>
-                      )}
-                    </p>
+                      <option value="JPY" className="bg-[#14141b]">JPY</option>
+                      <option value="USD" className="bg-[#14141b]">USD</option>
+                      <option value="EUR" className="bg-[#14141b]">EUR</option>
+                    </select>
                   </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                </label>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">
+                      Daily permit budget
+                    </label>
+                    <input
+                      type="number"
+                      value={budgetQuery}
+                      onChange={(e) => setBudgetQuery(e.target.value)}
+                      className="w-full bg-transparent border-b border-gray-700 py-2 focus:border-amber-500 outline-none text-right text-white font-medium"
+                    />
+                  </div>
+                </div>
+
+                {/* Upload Input Field */}
+                <div className="pt-2">
+                  <label className="block text-xs font-medium text-gray-400 mb-2">
+                    Reference Image / Location Asset
+                  </label>
+                  <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer bg-[#1a1a23] hover:border-amber-500 transition">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg
+                        className={`w-8 h-8 mb-2 ${isScouting ? "animate-spin text-amber-400" : "text-amber-500"}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                        />
+                      </svg>
+                      <p className="text-xs text-gray-300">
+                        {isScouting ? (
+                          <span className="text-amber-400 font-medium animate-pulse">
+                            Auto-scouting asset visual match...
+                          </span>
+                        ) : selectedFile ? (
+                          <span className="text-amber-400 font-medium">{selectedFile.name}</span>
+                        ) : (
+                          <span><strong className="text-amber-500">Click to upload</strong> reference image</span>
+                        )}
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                </div>
               </div>
+
+              {/* Action Button */}
+              <button
+                onClick={() => startScouting(selectedFile)}
+                disabled={isScouting}
+                className={`w-full font-bold py-3.5 rounded-lg transition shadow-lg mt-4 ${
+                  isScouting
+                    ? "bg-amber-800/50 text-amber-200 cursor-wait"
+                    : scoutComplete
+                    ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+                    : "bg-amber-600 hover:bg-amber-500 text-black"
+                }`}
+              >
+                {isScouting
+                  ? "Scouting in Progress..."
+                  : scoutComplete
+                  ? "✓ Scouting Complete — Results Below"
+                  : "Start Scouting"}
+              </button>
             </div>
 
-            {/* Action Button */}
-            <button
-              onClick={() => startScouting(selectedFile)}
-              disabled={isScouting}
-              className={`w-full font-bold py-3.5 rounded-lg transition shadow-lg mt-4 ${
-                isScouting
-                  ? "bg-amber-800/50 text-amber-200 cursor-wait"
-                  : scoutComplete
-                  ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                  : "bg-amber-600 hover:bg-amber-500 text-black"
-              }`}
-            >
-              {isScouting
-                ? "Scouting in Progress..."
-                : scoutComplete
-                ? "✓ Scouting Complete"
-                : "Start Scouting"}
-            </button>
+            {/* Results Display Section */}
+            {scoutComplete && results.length > 0 && (
+              <div className="bg-[#14141b] rounded-xl border border-gray-800 p-6 space-y-4 shadow-xl">
+                <div className="flex justify-between items-center border-b border-gray-800 pb-3">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <span className="text-emerald-400">✓</span> Matched Locations for {locationQuery} ({results.length})
+                  </h3>
+                  <span className="text-xs font-mono text-gray-400">
+                    Asset Match: {selectedFile?.name || "Uploaded Reference"}
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {results.map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-[#1a1a24] border border-gray-800 hover:border-amber-500/50 p-4 rounded-lg flex justify-between items-start transition"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <h4 className="font-bold text-gray-100 text-base">{item.name}</h4>
+                          <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-2 py-0.5 rounded font-mono">
+                            {item.matchScore}% Match
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400">{item.location}</p>
+                        <div className="flex gap-2 flex-wrap pt-1">
+                          {item.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="bg-[#222230] text-gray-300 text-[10px] px-2 py-1 rounded"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="text-right space-y-2">
+                        <p className="text-sm font-semibold text-amber-400">{item.dailyRate}</p>
+                        <button className="bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-600/50 text-xs font-semibold px-3 py-1.5 rounded transition">
+                          Request Permit
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

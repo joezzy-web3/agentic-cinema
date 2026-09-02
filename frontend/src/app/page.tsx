@@ -21,74 +21,89 @@ export default function Home() {
   const [budgetQuery, setBudgetQuery] = useState<string>("200000");
   const [currency, setCurrency] = useState<string>("JPY");
 
-  // Dynamic result generator based on filename/context
-  const generateDynamicResults = (fileName: string, location: string, currencySymbol: string) => {
-    const nameLower = fileName.toLowerCase();
+  const generateDynamicResults = (fileName: string, location: string, currencySymbol: string): ScoutResult[] => {
+    const nameLower = fileName ? fileName.toLowerCase() : "";
 
-    if (nameLower.includes("water") || nameLower.includes("pool") || nameLower.includes("beach")) {
+    if (nameLower.includes("water") || nameLower.includes("pool") || nameLower.includes("beach") || nameLower.includes("aqua")) {
       return [
         {
           id: "loc-1",
           name: `${location} Aquatic Studio & Resort`,
           location: `Coastal Zone, ${location}`,
-          matchScore: 97,
+          matchScore: 98,
           dailyRate: `${currencySymbol} 180,000 / day`,
-          tags: ["Water Facilities", "High Capacity", "Underwater Camera Rigs", "Permit Approved"],
+          tags: ["Water Facilities", "High Capacity", "Underwater Rigs", "Permit Fast-Track"],
         },
         {
           id: "loc-2",
-          name: `${location} Oceanfront Complex`,
+          name: `${location} Oceanfront Bay Complex`,
           location: `Bay District, ${location}`,
-          matchScore: 91,
+          matchScore: 92,
           dailyRate: `${currencySymbol} 195,000 / day`,
-          tags: ["Natural Lighting", "Cinematic Horizon", "Crew Staging Area"],
+          tags: ["Natural Horizon", "Controlled Waves", "Crew Staging"],
+        },
+        {
+          id: "loc-3",
+          name: `${location} Indoor Water Stage`,
+          location: `Studio District, ${location}`,
+          matchScore: 87,
+          dailyRate: `${currencySymbol} 150,000 / day`,
+          tags: ["Heated Tank", "Lighting Control", "Soundproof"],
         },
       ];
     }
 
-    if (nameLower.includes("cyber") || nameLower.includes("night") || nameLower.includes("neon") || nameLower.includes("city")) {
+    if (nameLower.includes("cyber") || nameLower.includes("night") || nameLower.includes("neon") || nameLower.includes("city") || nameLower.includes("street")) {
       return [
         {
           id: "loc-1",
-          name: `${location} Neon Alleyway & Rooftop Stage`,
+          name: `${location} Neon Alleyway & Skybridge`,
           location: `Downtown Central, ${location}`,
           matchScore: 99,
           dailyRate: `${currencySymbol} 160,000 / day`,
-          tags: ["Cyberpunk Aesthetics", "Practical Neon Lighting", "Night Permit"],
+          tags: ["Cyberpunk Vibe", "Practical Neon", "Night Filming Permit"],
         },
         {
           id: "loc-2",
-          name: `${location} Industrial Skybridge`,
-          location: `East District, ${location}`,
+          name: `${location} Rooftop & Skyline Platform`,
+          location: `Commercial District, ${location}`,
           matchScore: 94,
           dailyRate: `${currencySymbol} 210,000 / day`,
-          tags: ["High Elevation", "Vast Skyline", "Sound Stage Access"],
+          tags: ["360 Degree View", "High Elevation", "Helipad Access"],
+        },
+        {
+          id: "loc-3",
+          name: `${location} Underground Transit Tunnel`,
+          location: `Metro Area, ${location}`,
+          matchScore: 88,
+          dailyRate: `${currencySymbol} 175,000 / day`,
+          tags: ["Moody Lighting", "Industrial Texture", "Private Access"],
         },
       ];
     }
 
-    // Universal / General Location Fallback
+    // Default Fallback — Guarantees results for ANY file upload or trigger
     return [
       {
         id: "loc-1",
-        name: `${location} Prime Architectural Soundstage`,
+        name: `${location} Primary Production Soundstage A`,
         location: `Central Film District, ${location}`,
         matchScore: 96,
         dailyRate: `${currencySymbol} 175,000 / day`,
-        tags: ["Controlled Environment", "Modular Sets", "Full Grip & Electric"],
+        tags: ["Controlled Lighting", "Modular Sets", "Full Grip & Electric"],
       },
       {
         id: "loc-2",
-        name: `${location} Exterior Location Lot B`,
-        location: `Metropolitan Outskirts, ${location}`,
-        matchScore: 90,
+        name: `${location} Metropolitan Exterior Lot B`,
+        location: `Outskirts District, ${location}`,
+        matchScore: 91,
         dailyRate: `${currencySymbol} 140,000 / day`,
-        tags: ["DIT Support", "Permit Fast-Track", "Large Vehicle Access"],
+        tags: ["Generous Parking", "DIT Support", "Large Vehicle Access"],
       },
       {
         id: "loc-3",
-        name: `${location} Heritage & Culture Grounds`,
-        location: `Old Town District, ${location}`,
+        name: `${location} Architectural Heritage Complex`,
+        location: `Old Town Sector, ${location}`,
         matchScore: 85,
         dailyRate: `${currencySymbol} 190,000 / day`,
         tags: ["Historic Visuals", "Scenic Backdrops", "Private Security"],
@@ -99,16 +114,16 @@ export default function Home() {
   const startScouting = (file: File | null) => {
     setIsScouting(true);
     setScoutComplete(false);
-    setResults([]);
 
-    const fileName = file ? file.name : "reference-concept.jpg";
+    const fileName = file ? file.name : "reference_asset.jpg";
     const currSymbol = currency === "JPY" ? "¥" : currency === "USD" ? "$" : "€";
 
     setTimeout(() => {
+      const generatedResults = generateDynamicResults(fileName, locationQuery, currSymbol);
+      setResults(generatedResults);
       setIsScouting(false);
       setScoutComplete(true);
-      setResults(generateDynamicResults(fileName, locationQuery, currSymbol));
-    }, 2500);
+    }, 2000);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -271,7 +286,7 @@ export default function Home() {
 
             {/* Results Display Section */}
             {scoutComplete && results.length > 0 && (
-              <div className="bg-[#14141b] rounded-xl border border-gray-800 p-6 space-y-4 shadow-xl">
+              <div className="bg-[#14141b] rounded-xl border border-gray-800 p-6 space-y-4 shadow-xl animate-fadeIn">
                 <div className="flex justify-between items-center border-b border-gray-800 pb-3">
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
                     <span className="text-emerald-400">✓</span> Matched Locations for {locationQuery} ({results.length})

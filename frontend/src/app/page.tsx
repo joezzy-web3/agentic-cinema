@@ -1,19 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import dynamic from "next/dynamic";
 import { Big_Shoulders_Display, Inter, IBM_Plex_Mono } from "next/font/google";
-import { Film, GitFork, Layout, Sparkles } from "lucide-react";
+import { Film, GitFork, Sparkles } from "lucide-react";
 import MermaidDiagram from "@/components/MermaidDiagram";
-
-const CinemaCanvas = dynamic(() => import("@/components/CinemaCanvas"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-[550px] w-full items-center justify-center border border-[#322d2c] bg-[#1d1b20] text-xs text-[#948e85]">
-      Loading Storyboard Canvas…
-    </div>
-  ),
-});
 
 const display = Big_Shoulders_Display({
   subsets: ["latin"],
@@ -66,7 +56,7 @@ function Sprocket() {
 }
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"scout" | "storyboard" | "architecture">("scout");
+  const [activeTab, setActiveTab] = useState<"scout" | "architecture">("scout");
   const [city, setCity] = useState("Tokyo");
   const [budget, setBudget] = useState("200000");
   const [currency, setCurrency] = useState("JPY");
@@ -142,14 +132,6 @@ export default function Home() {
               }`}
             >
               <Film className="w-3.5 h-3.5" /> Scout Engine
-            </button>
-            <button
-              onClick={() => setActiveTab("storyboard")}
-              className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-sm transition-all ${
-                activeTab === "storyboard" ? "bg-[#c89b4a] text-[#16151a]" : "text-[#948e85] hover:text-[#ede9e2]"
-              }`}
-            >
-              <Layout className="w-3.5 h-3.5" /> Canvas & Storyboard
             </button>
             <button
               onClick={() => setActiveTab("architecture")}
@@ -256,16 +238,6 @@ export default function Home() {
               </div>
             </div>
           </main>
-        )}
-
-        {activeTab === "storyboard" && (
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-[#c89b4a]">Interactive Location Storyboard</h2>
-              <p className="text-xs text-[#948e85]">Use the canvas below to sketch set layouts, place cameras, and annotate scouted spots.</p>
-            </div>
-            <CinemaCanvas />
-          </section>
         )}
 
         {activeTab === "architecture" && (

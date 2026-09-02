@@ -5,10 +5,25 @@ import React, { useState } from "react";
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"scout" | "pipeline">("scout");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isScouting, setIsScouting] = useState<boolean>(false);
+  const [scoutComplete, setScoutComplete] = useState<boolean>(false);
+
+  const startScouting = (file: File | null) => {
+    setIsScouting(true);
+    setScoutComplete(false);
+
+    // Simulate complete scouting sequence
+    setTimeout(() => {
+      setIsScouting(false);
+      setScoutComplete(true);
+    }, 3000);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      startScouting(file);
     }
   };
 
@@ -101,7 +116,7 @@ export default function Home() {
                 <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer bg-[#1a1a23] hover:border-amber-500 transition">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <svg
-                      className="w-8 h-8 mb-2 text-amber-500"
+                      className={`w-8 h-8 mb-2 ${isScouting ? "animate-spin text-amber-400" : "text-amber-500"}`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -114,7 +129,11 @@ export default function Home() {
                       />
                     </svg>
                     <p className="text-xs text-gray-300">
-                      {selectedFile ? (
+                      {isScouting ? (
+                        <span className="text-amber-400 font-medium animate-pulse">
+                          Auto-scouting {selectedFile?.name}...
+                        </span>
+                      ) : selectedFile ? (
                         <span className="text-amber-400 font-medium">{selectedFile.name}</span>
                       ) : (
                         <span><strong className="text-amber-500">Click to upload</strong> reference image</span>
@@ -132,8 +151,22 @@ export default function Home() {
             </div>
 
             {/* Action Button */}
-            <button className="w-full bg-amber-600 hover:bg-amber-500 text-black font-bold py-3.5 rounded-lg transition shadow-lg mt-4">
-              Scouting...
+            <button
+              onClick={() => startScouting(selectedFile)}
+              disabled={isScouting}
+              className={`w-full font-bold py-3.5 rounded-lg transition shadow-lg mt-4 ${
+                isScouting
+                  ? "bg-amber-800/50 text-amber-200 cursor-wait"
+                  : scoutComplete
+                  ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+                  : "bg-amber-600 hover:bg-amber-500 text-black"
+              }`}
+            >
+              {isScouting
+                ? "Scouting in Progress..."
+                : scoutComplete
+                ? "✓ Scouting Complete"
+                : "Start Scouting"}
             </button>
           </div>
         )}

@@ -8,6 +8,9 @@ interface ScoutResult {
   location: string;
   matchScore: number;
   dailyRate: string;
+  imageUrl: string;
+  infoUrl: string;
+  contactEmail: string;
   tags: string[];
 }
 
@@ -23,6 +26,7 @@ export default function Home() {
 
   const generateDynamicResults = (fileName: string, location: string, currencySymbol: string): ScoutResult[] => {
     const nameLower = fileName ? fileName.toLowerCase() : "";
+    const encodedLoc = encodeURIComponent(location);
 
     if (nameLower.includes("water") || nameLower.includes("pool") || nameLower.includes("beach") || nameLower.includes("aqua")) {
       return [
@@ -32,6 +36,9 @@ export default function Home() {
           location: `Coastal Zone, ${location}`,
           matchScore: 98,
           dailyRate: `${currencySymbol} 180,000 / day`,
+          imageUrl: "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=600&q=80",
+          infoUrl: `https://www.google.com/maps/search/?api=1&query=${encodedLoc}+water+park+filming+location`,
+          contactEmail: "permits@aquatic-studios.com",
           tags: ["Water Facilities", "High Capacity", "Underwater Rigs", "Permit Fast-Track"],
         },
         {
@@ -40,14 +47,20 @@ export default function Home() {
           location: `Bay District, ${location}`,
           matchScore: 92,
           dailyRate: `${currencySymbol} 195,000 / day`,
+          imageUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+          infoUrl: `https://www.google.com/search?q=${encodedLoc}+oceanfront+film+location+permit`,
+          contactEmail: "film-commission@baydistrict.gov",
           tags: ["Natural Horizon", "Controlled Waves", "Crew Staging"],
         },
         {
           id: "loc-3",
-          name: `${location} Indoor Water Stage`,
+          name: `${location} Indoor Aquatic Stage`,
           location: `Studio District, ${location}`,
           matchScore: 87,
           dailyRate: `${currencySymbol} 150,000 / day`,
+          imageUrl: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=600&q=80",
+          infoUrl: `https://www.google.com/search?q=${encodedLoc}+indoor+water+stage+production`,
+          contactEmail: "booking@aquaticstage.io",
           tags: ["Heated Tank", "Lighting Control", "Soundproof"],
         },
       ];
@@ -61,6 +74,9 @@ export default function Home() {
           location: `Downtown Central, ${location}`,
           matchScore: 99,
           dailyRate: `${currencySymbol} 160,000 / day`,
+          imageUrl: "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=600&q=80",
+          infoUrl: `https://www.google.com/maps/search/?api=1&query=${encodedLoc}+neon+downtown+district`,
+          contactEmail: "permits@tokyofilminitiative.jp",
           tags: ["Cyberpunk Vibe", "Practical Neon", "Night Filming Permit"],
         },
         {
@@ -69,20 +85,15 @@ export default function Home() {
           location: `Commercial District, ${location}`,
           matchScore: 94,
           dailyRate: `${currencySymbol} 210,000 / day`,
+          imageUrl: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80",
+          infoUrl: `https://www.google.com/search?q=${encodedLoc}+rooftop+film+location`,
+          contactEmail: "events@skyline-studios.com",
           tags: ["360 Degree View", "High Elevation", "Helipad Access"],
-        },
-        {
-          id: "loc-3",
-          name: `${location} Underground Transit Tunnel`,
-          location: `Metro Area, ${location}`,
-          matchScore: 88,
-          dailyRate: `${currencySymbol} 175,000 / day`,
-          tags: ["Moody Lighting", "Industrial Texture", "Private Access"],
         },
       ];
     }
 
-    // Default Fallback — Guarantees results for ANY file upload or trigger
+    // Default Fallback — Architectural / Urban / Studio setup
     return [
       {
         id: "loc-1",
@@ -90,6 +101,9 @@ export default function Home() {
         location: `Central Film District, ${location}`,
         matchScore: 96,
         dailyRate: `${currencySymbol} 175,000 / day`,
+        imageUrl: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=600&q=80",
+        infoUrl: `https://www.google.com/maps/search/?api=1&query=${encodedLoc}+film+soundstage`,
+        contactEmail: "info@soundstage-one.com",
         tags: ["Controlled Lighting", "Modular Sets", "Full Grip & Electric"],
       },
       {
@@ -98,14 +112,20 @@ export default function Home() {
         location: `Outskirts District, ${location}`,
         matchScore: 91,
         dailyRate: `${currencySymbol} 140,000 / day`,
+        imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
+        infoUrl: `https://www.google.com/search?q=${encodedLoc}+exterior+film+lot+permits`,
+        contactEmail: "permits@cityfilmcommission.org",
         tags: ["Generous Parking", "DIT Support", "Large Vehicle Access"],
       },
       {
         id: "loc-3",
-        name: `${location} Architectural Heritage Complex`,
+        name: `${location} Heritage & Culture Grounds`,
         location: `Old Town Sector, ${location}`,
         matchScore: 85,
         dailyRate: `${currencySymbol} 190,000 / day`,
+        imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80",
+        infoUrl: `https://www.google.com/maps/search/?api=1&query=${encodedLoc}+heritage+location`,
+        contactEmail: "heritage-permits@culture-dept.gov",
         tags: ["Historic Visuals", "Scenic Backdrops", "Private Security"],
       },
     ];
@@ -284,49 +304,79 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Results Display Section */}
+            {/* Visual Results Display Section */}
             {scoutComplete && results.length > 0 && (
-              <div className="bg-[#14141b] rounded-xl border border-gray-800 p-6 space-y-4 shadow-xl animate-fadeIn">
+              <div className="bg-[#14141b] rounded-xl border border-gray-800 p-6 space-y-4 shadow-xl">
                 <div className="flex justify-between items-center border-b border-gray-800 pb-3">
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    <span className="text-emerald-400">✓</span> Matched Locations for {locationQuery} ({results.length})
+                    <span className="text-emerald-400">✓</span> Matched Visual Locations for {locationQuery} ({results.length})
                   </h3>
                   <span className="text-xs font-mono text-gray-400">
                     Asset Match: {selectedFile?.name || "Uploaded Reference"}
                   </span>
                 </div>
 
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-4">
                   {results.map((item) => (
                     <div
                       key={item.id}
-                      className="bg-[#1a1a24] border border-gray-800 hover:border-amber-500/50 p-4 rounded-lg flex justify-between items-start transition"
+                      className="bg-[#1a1a24] border border-gray-800 hover:border-amber-500/50 rounded-xl overflow-hidden flex flex-col md:flex-row transition"
                     >
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <h4 className="font-bold text-gray-100 text-base">{item.name}</h4>
-                          <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-2 py-0.5 rounded font-mono">
-                            {item.matchScore}% Match
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-400">{item.location}</p>
-                        <div className="flex gap-2 flex-wrap pt-1">
-                          {item.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="bg-[#222230] text-gray-300 text-[10px] px-2 py-1 rounded"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
+                      {/* Location Preview Image */}
+                      <div className="md:w-56 h-40 md:h-auto relative bg-gray-900 shrink-0">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <span className="absolute top-2 left-2 bg-emerald-500/90 text-black font-bold text-xs px-2 py-0.5 rounded shadow">
+                          {item.matchScore}% Match
+                        </span>
                       </div>
 
-                      <div className="text-right space-y-2">
-                        <p className="text-sm font-semibold text-amber-400">{item.dailyRate}</p>
-                        <button className="bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-600/50 text-xs font-semibold px-3 py-1.5 rounded transition">
-                          Request Permit
-                        </button>
+                      {/* Content & Action Section */}
+                      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-bold text-gray-100 text-lg">{item.name}</h4>
+                              <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                                📍 {item.location}
+                              </p>
+                            </div>
+                            <span className="text-base font-bold text-amber-400">{item.dailyRate}</span>
+                          </div>
+
+                          {/* Tags */}
+                          <div className="flex gap-2 flex-wrap mt-3">
+                            {item.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="bg-[#222230] text-gray-300 text-[10px] px-2.5 py-1 rounded-md border border-gray-700/50"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Interactive Client Action Buttons */}
+                        <div className="flex items-center gap-3 pt-2 border-t border-gray-800/80">
+                          <a
+                            href={item.infoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-2 rounded-lg transition flex items-center gap-1 font-medium"
+                          >
+                            🌐 View Map & Info
+                          </a>
+                          <a
+                            href={`mailto:${item.contactEmail}?subject=Permit Request: ${encodeURIComponent(item.name)}`}
+                            className="text-xs bg-amber-600 hover:bg-amber-500 text-black font-bold px-3 py-2 rounded-lg transition flex items-center gap-1"
+                          >
+                            ✉️ Contact / Permit Request
+                          </a>
+                        </div>
                       </div>
                     </div>
                   ))}

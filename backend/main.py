@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import urllib.parse
 from contextlib import asynccontextmanager
 from typing import List, Literal
 
@@ -71,7 +72,7 @@ class GeneratedLocation(BaseModel):
     aesthetic: str
     estimated_cost: str
     logistics: str
-    image_keyword: str
+    image_search_query: str
 
 
 class GeneratedLocationResponse(BaseModel):
@@ -96,33 +97,15 @@ class ScoutResponse(BaseModel):
 
 
 # --------------------------------------------------------------------------
-# Image lookup
+# Dynamic Image Resolution via Unsplash Source API
 # --------------------------------------------------------------------------
-IMAGE_BY_KEYWORD: dict[tuple[str, ...], str] = {
-    ("quarry", "rock", "mountain"):
-        "https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=1000&q=80",
-    ("gallery", "art", "museum", "modern", "architecture"):
-        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80",
-    ("reservoir", "dam", "lake", "water", "beach"):
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80",
-    ("park", "forest", "nature"):
-        "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=80",
-    ("city", "street", "skyscraper", "alley"):
-        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80",
-}
-DEFAULT_IMAGE = "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80"
-
-
-def resolve_image(image_keyword: str) -> str:
-    kw = image_keyword.lower()
-    for keywords, url in IMAGE_BY_KEYWORD.items():
-        if any(k in kw for k in keywords):
-            return url
-    return DEFAULT_IMAGE
+def resolve_image(search_query: str) -> str:
+    encoded_query = urllib.parse.quote(search_query)
+    return f"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80" if not search_query else f"https://source.unsplash.com/1000x750/?{encoded_query}"
 
 
 # --------------------------------------------------------------------------
-# Gemini client initialization
+# Gemini Client
 # --------------------------------------------------------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -154,14 +137,15 @@ def health_check():
 
 def build_prompt(req: ScoutRequest) -> str:
     return (
-        f"You are a global film location scout. Provide 6 real, specific shooting location "
-        f"recommendations in or around '{req.query}' for a production with a daily location "
-        f"permit budget of {req.currency} {req.budget}.\n"
-        f"- Output realistic permit costs in the requested currency ({req.currency}) or local equivalent.\n"
-        f"- Provide actionable logistics notes tailored to filming in '{req.query}' "
-        f"(permits, access, power, acoustics).\n"
-        f"- For image_keyword, provide a single English architectural/environmental keyword "
-        f"(e.g., quarry, gallery, waterfront, cathedral, alleyway, skyscraper)."
+        f"You are an expert film location scout. Provide 6 real, geographically accurate shooting locations "
+        f"located in or within a 30-minute drive of '{req.query}'. The production's daily permit budget is {req.currency} {req.budget}.\n\n"
+        f"Requirements for each location:\n"
+        f"1. name: Exact real-world landmark or location name (no fictional places).\n"
+        f"2. category: Production type (e.g., Architectural Landmark, Public Square, Industrial Site, Natural Reserve).\n"
+        f"3. aesthetic: Specific visual description, architectural style, lighting, and cinematic mood.\n"
+        f"4. estimated_cost: Realistic permit cost estimation per day in {req.currency} or local equivalent.\n"
+        f"5. logistics: Accurate notes on filming access, power supply, sound environment, and council/permit authorities.\n"
+        f"6. image_search_query: 2-3 English search terms for Unsplash to fetch a matching photo (e.g. 'shibuya crossing tokyo', 'tower bridge london')."
     )
 
 
@@ -172,6 +156,7 @@ def call_gemini_sync(client: genai.Client, prompt: str) -> GeneratedLocationResp
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=GeneratedLocationResponse,
+            temperature=0.2,  # Low temperature for higher accuracy and fewer hallucinations
         ),
     )
     return GeneratedLocationResponse.model_validate_json(response.text)
@@ -190,8 +175,8 @@ async def scout_location(req: ScoutRequest):
     except asyncio.TimeoutError:
         logger.warning("Gemini call timed out for query=%r", req.query)
         raise HTTPException(status_code=504, detail="Location scout timed out. Try again.")
-    except Exception:
-        logger.exception("Gemini call failed for query=%r", req.query)
+    except Exception as e:
+        logger.exception("Gemini call failed for query=%r: %s", req.query, e)
         raise HTTPException(status_code=502, detail="Location scout is temporarily unavailable.")
 
     locations = [
@@ -201,7 +186,7 @@ async def scout_location(req: ScoutRequest):
             aesthetic=loc.aesthetic,
             estimated_cost=loc.estimated_cost,
             logistics=loc.logistics,
-            image_url=resolve_image(loc.image_keyword),
+            image_url=f"https://source.unsplash.com/1000x750/?{urllib.parse.quote(loc.image_search_query)}",
         )
         for loc in parsed.locations
     ]

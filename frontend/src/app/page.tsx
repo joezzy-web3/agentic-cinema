@@ -93,7 +93,7 @@ export default function Home() {
       ];
     }
 
-    // Default Fallback — Architectural / Urban / Studio setup
+    // Default Fallback Visual Locations
     return [
       {
         id: "loc-1",
@@ -119,7 +119,7 @@ export default function Home() {
       },
       {
         id: "loc-3",
-        name: `${location} Heritage & Culture Grounds`,
+        name: `${location} Architectural Heritage Complex`,
         location: `Old Town Sector, ${location}`,
         matchScore: 85,
         dailyRate: `${currencySymbol} 190,000 / day`,
@@ -323,7 +323,7 @@ export default function Home() {
                       className="bg-[#1a1a24] border border-gray-800 hover:border-amber-500/50 rounded-xl overflow-hidden flex flex-col md:flex-row transition"
                     >
                       {/* Location Preview Image */}
-                      <div className="md:w-56 h-40 md:h-auto relative bg-gray-900 shrink-0">
+                      <div className="md:w-56 h-48 md:h-auto relative bg-gray-900 shrink-0">
                         <img
                           src={item.imageUrl}
                           alt={item.name}
@@ -361,18 +361,18 @@ export default function Home() {
                         </div>
 
                         {/* Interactive Client Action Buttons */}
-                        <div className="flex items-center gap-3 pt-2 border-t border-gray-800/80">
+                        <div className="flex items-center gap-3 pt-3 border-t border-gray-800/80">
                           <a
                             href={item.infoUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-2 rounded-lg transition flex items-center gap-1 font-medium"
+                            className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 font-medium"
                           >
                             🌐 View Map & Info
                           </a>
                           <a
                             href={`mailto:${item.contactEmail}?subject=Permit Request: ${encodeURIComponent(item.name)}`}
-                            className="text-xs bg-amber-600 hover:bg-amber-500 text-black font-bold px-3 py-2 rounded-lg transition flex items-center gap-1"
+                            className="text-xs bg-amber-600 hover:bg-amber-500 text-black font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5"
                           >
                             ✉️ Contact / Permit Request
                           </a>

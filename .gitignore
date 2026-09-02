@@ -1,0 +1,11 @@
+.env
+.env*
+*.env
+backend/.env
+frontend/.env.local
+node_modules/
+__pycache__/
+venv/
+.env$
+.env$
+.env$
